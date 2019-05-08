@@ -12,6 +12,7 @@ import (
 )
 
 const (
+	Data10Path    = "data/num10.txt"
 	Data1kPath    = "data/num1k.txt"
 	Data5kPath    = "data/num5k.txt"
 	Data10kPath   = "data/num10k.txt"
@@ -20,6 +21,7 @@ const (
 	Data200kPath  = "data/num200k.txt"
 	Data500kPath  = "data/num500k.txt"
 	Data1000kPath = "data/num1000k.txt"
+	Data10        = 10
 	Data1k        = 1000
 	Data5k        = 5000
 	Data10k       = 10000
@@ -65,7 +67,17 @@ func RandGenerator(n uint32, path string) {
 
 	w.Flush()
 }
+func GetData10() []int32 {
+	data := make([]int32, 0, Data10)
 
+	if getData(&data, Data10Path, Data10) {
+		return data
+	}
+
+	fmt.Println("GetData10 fail")
+
+	return nil
+}
 func GetData1k() []int32 {
 	data := make([]int32, 0, Data1k)
 
