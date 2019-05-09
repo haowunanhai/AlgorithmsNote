@@ -37,7 +37,20 @@ func main() {
 	}
 
 	fmt.Println(len(data1k), len(data5k), len(data10k), len(data50k), len(data100k), len(data200k), len(data500k), len(data1000k))
-
+	if len(os.Args) != 2 {
+		fmt.Println("Usage: ./bin/algo data\n")
+		fmt.Println("data 表示用于测试算法的随机数个数，取值如下：\n")
+		fmt.Printf("%-10s %-20s\n", "10", "10 number")
+		fmt.Printf("%-10s %-20s\n", "1k", "1k number")
+		fmt.Printf("%-10s %-20s\n", "5k", "5k number")
+		fmt.Printf("%-10s %-20s\n", "10k", "1w number")
+		fmt.Printf("%-10s %-20s\n", "50k", "5w number")
+		fmt.Printf("%-10s %-20s\n", "100k", "10w number")
+		fmt.Printf("%-10s %-20s\n", "200k", "20w number")
+		fmt.Printf("%-10s %-20s\n", "500k", "50w number")
+		fmt.Printf("%-10s %-20s\n", "1000k", "100w number")
+		return
+	}
 	data := dataMap[os.Args[1]]
 
 	data1 := make([]int32, len(data), len(data))
