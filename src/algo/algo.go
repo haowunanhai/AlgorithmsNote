@@ -36,7 +36,6 @@ func main() {
 		"1000k": data1000k,
 	}
 
-	fmt.Println(len(data1k), len(data5k), len(data10k), len(data50k), len(data100k), len(data200k), len(data500k), len(data1000k))
 	if len(os.Args) != 2 {
 		fmt.Println("Usage: ./bin/algo data\n")
 		fmt.Println("data 表示用于测试算法的随机数个数，取值如下：\n")
@@ -77,6 +76,7 @@ func main() {
 	fmt.Println("MergeSort", "cmpCnt", 0, "swapCnt", 0, "elaped time:", "[ ", (end-start)/1e6, "ms", " ]")
 	fmt.Println(res[:displayLen], "\n")
 
+	//快速排序
 	copy(data1, data)
 	start = time.Now().UnixNano()
 	QuickSort1(data1)
@@ -104,6 +104,22 @@ func main() {
 	end = time.Now().UnixNano()
 	fmt.Println("QuickSort4", "cmpCnt", 0, "swapCnt", 0, "elaped time:", "[ ", (end-start)/1e6, "ms", " ]")
 	fmt.Println(data1[:displayLen], "\n")
+
+	//堆排序
+	copy(data1, data)
+	start = time.Now().UnixNano()
+	HeapSort(data1)
+	end = time.Now().UnixNano()
+	fmt.Println("HeapSort", "cmpCnt", 0, "swapCnt", 0, "elaped time:", "[ ", (end-start)/1e6, "ms", " ]")
+	fmt.Println(data1[:displayLen], "\n")
+
+	//计数排序
+	copy(data1, data)
+	start = time.Now().UnixNano()
+	res = CountingSort(data1)
+	end = time.Now().UnixNano()
+	fmt.Println("CountingSort", "cmpCnt", 0, "swapCnt", 0, "elaped time:", "[ ", (end-start)/1e6, "ms", " ]")
+	fmt.Println(res[:displayLen], "\n")
 
 }
 
@@ -438,6 +454,124 @@ func QuickSort4(data []int32) {
 
 	QuickSort4(data[:p])
 	QuickSort4(data[p+1:])
+}
+
+//从根结点开始，从1开始编号，入参均是编号不是数组下标
+type HeapType []int32
+
+//入参是结点的编号
+func (heap HeapType) LeftChild(n int32) int32 {
+	return 2 * n
+}
+
+func (heap HeapType) RightChild(n int32) int32 {
+	return 2*n + 1
+}
+
+func (heap HeapType) ParentNode(n int32) int32 {
+	if n < 2 {
+		return 1
+	}
+
+	return n / 2
+}
+
+//判断是否是叶子结点，在建堆时，叶子结点不进行siftdown
+func (heap HeapType) IsLeaf(n int32) bool {
+	if n > int32(len(heap)/2) {
+		return true
+	}
+
+	return false
+}
+
+func (heap HeapType) Swap(n1, n2 int32) {
+	heap[n1-1], heap[n2-1] = heap[n2-1], heap[n1-1]
+}
+
+//调整此结点为根的子树
+func (heap HeapType) SiftDown(n int32) {
+	var largest int32 = n
+
+	if heap.IsLeaf(n) {
+		return
+	}
+
+	//比较该结点和左子结点
+	l := heap.LeftChild(n)
+	if l <= int32(len(heap)) && heap[l-1] > heap[largest-1] {
+		largest = l
+	}
+
+	r := heap.RightChild(n)
+	if r <= int32(len(heap)) && heap[r-1] > heap[largest-1] {
+		largest = r
+	}
+
+	//如果该结点不是最大值，则该结点和子节点交换
+	if largest != n {
+		heap.Swap(n, largest)
+
+		//递归调整交换后的节点
+		heap.SiftDown(largest)
+	}
+}
+
+func (heap HeapType) BuildMaxHeap() {
+	//编号最大叶子结点的编号
+	maxLeafNum := len(heap)
+
+	//编号最大的分支结点的编号
+	nodeNum := heap.ParentNode(int32(maxLeafNum))
+
+	for i := nodeNum; i >= 1; i-- {
+		heap.SiftDown(i)
+	}
+}
+
+func (heap HeapType) Print() {
+	fmt.Println(heap)
+}
+
+//总体分为两步，第一步将无序数列建成一个max-heap，
+//第二部将堆顶元素与最后一个叶子结点交换，对堆顶的新元素做siftdown,整个堆中元素个数减一
+func HeapSort(data []int32) {
+	HeapType(data).BuildMaxHeap()
+
+	for i := int32(len(data)); i > 1; i-- {
+		HeapType(data).Swap(1, i)
+		HeapType(data[:i-1]).SiftDown(1)
+	}
+}
+
+//计数排序
+func CountingSort(data []int32) (result []int32) {
+	//找到最大值k来确定计数数组的大小
+	HeapType(data).BuildMaxHeap()
+	k := data[0]
+
+	bs := make([]int32, k+1, k+1)
+
+	//统计data中每个数出现的次数
+	for i := 0; i < len(data); i++ {
+		bs[data[i]]++
+	}
+
+	//对于每个数a统计 <= 它的数的个数，记录在以a为下标slice上，覆盖掉原来的次数
+	for i := 1; i < int(k+1); i++ {
+		bs[i] += bs[i-1]
+	}
+
+	//遍历一遍源data，将每个数放到最终的result中
+	result = make([]int32, len(data), len(data))
+
+	for i := 0; i < len(data); i++ {
+		bs[data[i]]--
+
+		result[bs[data[i]]] = data[i]
+	}
+
+	return result
 }
 
 /*
